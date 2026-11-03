@@ -1,5 +1,5 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>トップ | Node Atlas（ノード・アトラス）</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#222;background:#fff}a{color:#0b5cad}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:.35rem;text-align:left}th{background:#f5f5f5}input{width:100%;padding:.6rem;font-size:1rem;background:#f5f5f5;color:#222;border:1px solid #bbb;border-radius:4px}nav{margin-bottom:1rem}nav a{margin-right:1rem}.meta{color:#666;font-size:.9em}.warn{background:#fff3cd;border:1px solid #e0c060;padding:.6rem 1rem}.items{list-style:none;padding:0;margin:.5rem 0}.items li{padding:.35rem 0;border-bottom:1px solid #e5e5e5}.yomi{display:block;color:#666;font-size:.85em}</style></head>
+<title>トップ | Node Atlas（ノード・アトラス）</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#222;background:#fff}a{color:#0b5cad}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:.35rem;text-align:left}th{background:#f5f5f5}input{width:100%;padding:.6rem;font-size:1rem;background:#f5f5f5;color:#222;border:1px solid #bbb;border-radius:4px}input[type=search]{width:60%}select{padding:.45rem}nav{margin-bottom:1rem}nav a{margin-right:1rem}.meta{color:#666;font-size:.9em}.warn{background:#fff3cd;border:1px solid #e0c060;padding:.6rem 1rem}.items{list-style:none;padding:0;margin:.5rem 0}.items li{padding:.35rem 0;border-bottom:1px solid #e5e5e5}.yomi{display:block;color:#666;font-size:.85em}details{margin:.4rem 0}details ul{padding-left:1.2rem}summary{cursor:pointer}h4{margin:.8rem 0 .2rem;font-size:1rem}</style></head>
 <body><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./about.html">このサイトについて</a></nav>
 <h1>Node Atlas（ノード・アトラス）</h1>
 <p>世界の交通網・国と地域・気候のデータを集め、変遷と繋がりをたどる個人プロジェクトの公開サイトです。現在は世界の国・地域の一覧、北海道の自治体（市区町村・振興局・郡・行政区）、函館本線を中心に収集した交通データ（鉄道・航路・空港・道路・索道）を収録しています。</p>
@@ -11,8 +11,8 @@
 <script>
 function f(){const q=document.getElementById('q').value.trim();const el=document.getElementById('r');
 if(!q){el.innerHTML='<p>上の欄に入力してください。</p>';return}
-const m=SEARCH.filter(x=>(x.n+x.e+x.d).toLowerCase().includes(q.toLowerCase())).slice(0,50);
-el.innerHTML=m.length?'<table><tr><th>名称</th><th>種別</th><th>補足</th></tr>'+m.map(x=>`<tr><td><a href="${x.u}">${x.n}</a></td><td>${x.t}</td><td>${x.d}</td></tr>`).join('')+'</table>':'<p>見つかりませんでした。</p>'}f();
+const m=SEARCH.map(x=>Array.isArray(x)?{n:x[0],e:x[1],t:'地域',d:x[2],i:x[3]}:x).filter(x=>(x.n+x.e+x.d).toLowerCase().includes(q.toLowerCase())).slice(0,50);
+el.innerHTML=m.length?'<table><tr><th>名称</th><th>種別</th><th>補足</th></tr>'+m.map(x=>`<tr><td><a href="${x.u||('region.html?id='+x.i)}">${x.n}</a></td><td>${x.t}</td><td>${x.d}</td></tr>`).join('')+'</table>':'<p>見つかりませんでした。</p>'}f();
 </script>
 <h2>コンテンツ</h2>
 <ul>

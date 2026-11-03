@@ -1,5 +1,5 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>系統・列車 | Node Atlas（ノード・アトラス）</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#222;background:#fff}a{color:#0b5cad}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:.35rem;text-align:left}th{background:#f5f5f5}input{width:100%;padding:.6rem;font-size:1rem;background:#f5f5f5;color:#222;border:1px solid #bbb;border-radius:4px}nav{margin-bottom:1rem}nav a{margin-right:1rem}.meta{color:#666;font-size:.9em}.warn{background:#fff3cd;border:1px solid #e0c060;padding:.6rem 1rem}.items{list-style:none;padding:0;margin:.5rem 0}.items li{padding:.35rem 0;border-bottom:1px solid #e5e5e5}.yomi{display:block;color:#666;font-size:.85em}</style></head>
+<title>系統・列車 | Node Atlas（ノード・アトラス）</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#222;background:#fff}a{color:#0b5cad}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:.35rem;text-align:left}th{background:#f5f5f5}input{width:100%;padding:.6rem;font-size:1rem;background:#f5f5f5;color:#222;border:1px solid #bbb;border-radius:4px}input[type=search]{width:60%}select{padding:.45rem}nav{margin-bottom:1rem}nav a{margin-right:1rem}.meta{color:#666;font-size:.9em}.warn{background:#fff3cd;border:1px solid #e0c060;padding:.6rem 1rem}.items{list-style:none;padding:0;margin:.5rem 0}.items li{padding:.35rem 0;border-bottom:1px solid #e5e5e5}.yomi{display:block;color:#666;font-size:.85em}details{margin:.4rem 0}details ul{padding-left:1.2rem}summary{cursor:pointer}h4{margin:.8rem 0 .2rem;font-size:1rem}</style></head>
 <body><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./about.html">このサイトについて</a></nav>
 <div id="app"><p>読み込んでいます…</p></div>
 <script>
@@ -8,9 +8,35 @@ const params=new URLSearchParams(location.search);
 const eid=params.get('id')||'';
 const ecc=eid.split('-')[1]||'';
 function fail(msg){document.getElementById('app').innerHTML='<p>'+esc(msg)+'</p>'}
-function cell(v){return (v&&typeof v==='object')?'<a href="'+esc(v.u)+'">'+esc(v.t)+'</a>':esc(v)}
+function cell(v){if(v&&typeof v==='object'){var u=v.u;if(/^RGN-/.test(u))u='region.html?id='+u;return '<a href="'+esc(u)+'">'+esc(v.t)+'</a>'}return esc(v)}
 function metaTable(rows){return '<table>'+rows.map(r=>'<tr><th>'+esc(r[0])+'</th><td>'+cell(r[1])+'</td></tr>').join('')+'</table>'}
 function metaLine(segs){return '<p class="meta">'+segs.map(s=>s.u?'<a href="'+esc(s.u)+'">'+esc(s.t)+'</a>':esc(s.t)).join(' ／ ')+'</p>'}
+function f1(v){return (v===''||v==null)?'':Number(v).toFixed(1)}
+function dataLine(d){return '<h2>データについて</h2><p class="meta">確度：'+esc(d.c)+' ／ 出典：'+esc(d.s)+' ／ 最終更新：'+esc(d.u)+' ／ レコードID：'+esc(eid)+'</p>'}
+function lstTable(cols,rows,linkPrefix,db){return '<table class="lst"><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>'+rows.map(r=>{var cs=[];if(db){cs.push('<a href="'+linkPrefix+r.id+'">'+esc(db[r.id].name)+'</a>');if(cols[1]==='読み')cs.push(esc(db[r.id].reading||''));r.cells.forEach(c=>cs.push(esc(c)))}else{r.cells.forEach((c,i)=>cs.push(i===0?'<a href="'+linkPrefix+r.id+'">'+esc(c)+'</a>':esc(c)))}return '<tr>'+cs.map(c=>'<td>'+c+'</td>').join('')+'</tr>'}).join('')+'</table>'}
+
+function enhance(){
+  document.querySelectorAll('table.lst').forEach(function(tb){
+    var head=tb.querySelector('tr'); if(!head) return;
+    var cols=[].map.call(head.querySelectorAll('th'),function(th){return th.textContent});
+    var rows=[].slice.call(tb.querySelectorAll('tr'),1);
+    rows.forEach(function(r,i){r.dataset.o=i});
+    var wrap=document.createElement('p');
+    var inp=document.createElement('input'); inp.type='search'; inp.placeholder='リスト内検索';
+    var sel=document.createElement('select');
+    sel.innerHTML='<option value="-1">並べ替え：初期順</option>'+cols.map(function(c,i){return '<option value="'+i+'">並べ替え：'+c+'</option>'}).join('');
+    wrap.appendChild(inp); wrap.appendChild(sel);
+    tb.parentNode.insertBefore(wrap, tb);
+    inp.addEventListener('input',function(){var v=inp.value.trim(); rows.forEach(function(r){r.style.display=(!v||r.textContent.indexOf(v)>=0)?'':'none'})});
+    sel.addEventListener('change',function(){var k=+sel.value;
+      rows.sort(function(a,b){ if(k<0) return (+a.dataset.o)-(+b.dataset.o);
+        var x=a.cells[k].textContent.trim(), y=b.cells[k].textContent.trim();
+        var nx=parseFloat(x), ny=parseFloat(y);
+        if(!isNaN(nx)&&!isNaN(ny)&&x!==''&&y!=='') return nx-ny;
+        return x.localeCompare(y,'ja')});
+      rows.forEach(function(r){tb.appendChild(r)})});
+  });
+}
 
 if(!eid||!ecc){fail('IDが指定されていません。')}
 else fetch('data/services-'+ecc+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(DB=>{
@@ -26,6 +52,7 @@ if(v.notes)h+='<p>'+esc(v.notes)+'</p>';
 if(v.stops&&v.stops.length)h+='<h2>停車駅</h2><table><tr><th>順</th><th>駅名</th><th>自治体</th><th>累計</th></tr>'+v.stops.map(x=>'<tr><td>'+esc(x.seq)+'</td><td><a href="node.html?id='+x.id+'">'+esc(x.name)+'</a></td><td>'+(x.muni_id?'<a href="region.html?id='+x.muni_id+'">'+esc(x.muni)+'</a>':esc(x.muni))+'</td><td>'+esc(x.cum)+' km</td></tr>').join('')+'</table>';
 
 document.getElementById('app').innerHTML=h;
+enhance();
 }).catch(()=>fail('データを読み込めませんでした。'));
 </script>
 </body></html>
