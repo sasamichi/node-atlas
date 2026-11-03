@@ -1,0 +1,35 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>路線 | Node Atlas（ノード・アトラス）</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#222;background:#fff}a{color:#0b5cad}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:.35rem;text-align:left}th{background:#f5f5f5}input{width:100%;padding:.6rem;font-size:1rem;background:#f5f5f5;color:#222;border:1px solid #bbb;border-radius:4px}nav{margin-bottom:1rem}nav a{margin-right:1rem}.meta{color:#666;font-size:.9em}.warn{background:#fff3cd;border:1px solid #e0c060;padding:.6rem 1rem}.items{list-style:none;padding:0;margin:.5rem 0}.items li{padding:.35rem 0;border-bottom:1px solid #e5e5e5}.yomi{display:block;color:#666;font-size:.85em}</style></head>
+<body><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./about.html">このサイトについて</a></nav>
+<div id="app"><p>読み込んでいます…</p></div>
+<script>
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const params=new URLSearchParams(location.search);
+const eid=params.get('id')||'';
+const ecc=eid.split('-')[1]||'';
+function fail(msg){document.getElementById('app').innerHTML='<p>'+esc(msg)+'</p>'}
+function cell(v){return (v&&typeof v==='object')?'<a href="'+esc(v.u)+'">'+esc(v.t)+'</a>':esc(v)}
+function metaTable(rows){return '<table>'+rows.map(r=>'<tr><th>'+esc(r[0])+'</th><td>'+cell(r[1])+'</td></tr>').join('')+'</table>'}
+function metaLine(segs){return '<p class="meta">'+segs.map(s=>s.u?'<a href="'+esc(s.u)+'">'+esc(s.t)+'</a>':esc(s.t)).join(' ／ ')+'</p>'}
+
+if(!eid||!ecc){fail('IDが指定されていません。')}
+else fetch('data/lines-'+ecc+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(DB=>{
+const v=DB[eid];
+if(!v){fail('見つかりませんでした。');return}
+document.title=v.name+' | Node Atlas（ノード・アトラス）';
+let h='';
+
+h+='<h1>'+esc(v.name)+'</h1>';
+h+=metaLine(v.meta);
+if(v.notes)h+='<p>'+esc(v.notes)+'</p>';
+if(v.hakodate)h+='<p>函館本線の専用ページ（砂原支線を含む）は<a href="hakodate.html">こちら</a>です。</p>';
+if(v.conn&&v.conn.length)h+='<p>関連する路線（接続）：'+v.conn.map(c=>'<a href="line.html?id='+c.id+'">'+esc(c.name)+'</a>').join('、')+'</p>';
+if(v.svcs&&v.svcs.length)h+='<p>この路線を経由する系統・列車：'+v.svcs.map(s=>'<a href="service.html?id='+s.id+'">'+esc(s.name)+'</a>').join('、')+'</p>';
+if(v.rows&&v.rows.length)h+='<h2>拠点一覧（収集済みの範囲）</h2><table><tr><th>名称</th><th>種別</th><th>コード</th><th>区間 km</th><th>累計</th><th>自治体</th><th>座標</th></tr>'+v.rows.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.kind)+'</td><td>'+esc(n.code)+'</td><td>'+esc(n.dist)+'</td><td>'+esc(n.cum)+' km</td><td>'+(n.muni_id?'<a href="region.html?id='+n.muni_id+'">'+esc(n.muni)+'</a>':esc(n.muni))+'</td><td>'+esc(n.coord)+'</td></tr>').join('')+'</table>';
+else if(v.members&&v.members.length)h+='<h2>所属する拠点</h2><table><tr><th>名称</th><th>種別</th><th>コード</th><th>自治体</th><th>座標</th></tr>'+v.members.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.kind)+'</td><td>'+esc(n.code)+'</td><td>'+(n.muni_id?'<a href="region.html?id='+n.muni_id+'">'+esc(n.muni)+'</a>':esc(n.muni))+'</td><td>'+esc(n.coord)+'</td></tr>').join('')+'</table>';
+else if(v.none)h+='<p>この路線は路線単位の記録のみで、拠点は未収集です。</p>';
+
+document.getElementById('app').innerHTML=h;
+}).catch(()=>fail('データを読み込めませんでした。'));
+</script>
+</body></html>
