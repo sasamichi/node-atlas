@@ -12,7 +12,7 @@ function cell(v){if(v&&typeof v==='object'){var u=v.u;if(/^RGN-/.test(u))u='regi
 function metaTable(rows){return '<table>'+rows.map(r=>'<tr><th>'+esc(r[0])+'</th><td>'+cell(r[1])+'</td></tr>').join('')+'</table>'}
 function metaLine(segs){return '<p class="meta">'+segs.map(s=>s.u?'<a href="'+esc(s.u)+'">'+esc(s.t)+'</a>':esc(s.t)).join(' ／ ')+'</p>'}
 function f1(v){return (v===''||v==null)?'':Number(v).toFixed(1)}
-function dataLine(d){return '<h2>データについて</h2><p class="meta">確度：'+esc(d.c)+' ／ 出典：'+esc(d.s)+' ／ 最終更新：'+esc(d.u)+' ／ レコードID：'+esc(eid)+'</p>'}
+function dataLine(d){return '<h2>データについて</h2><p class="meta">出典：'+esc(d.s)+' ／ 最終更新：'+esc(d.u)+' ／ レコードID：'+esc(eid)+'</p>'}
 function lstTable(cols,rows,linkPrefix,db){return '<table class="lst"><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>'+rows.map(r=>{var cs=[];if(db){cs.push('<a href="'+linkPrefix+r.id+'">'+esc(db[r.id].name)+'</a>');if(cols[1]==='読み')cs.push(esc(db[r.id].reading||''));r.cells.forEach(c=>cs.push(esc(c)))}else{r.cells.forEach((c,i)=>cs.push(i===0?'<a href="'+linkPrefix+r.id+'">'+esc(c)+'</a>':esc(c)))}return '<tr>'+cs.map(c=>'<td>'+c+'</td>').join('')+'</tr>'}).join('')+'</table>'}
 
 function enhance(){

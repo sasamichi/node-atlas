@@ -12,7 +12,7 @@ function cell(v){if(v&&typeof v==='object'){var u=v.u;if(/^RGN-/.test(u))u='regi
 function metaTable(rows){return '<table>'+rows.map(r=>'<tr><th>'+esc(r[0])+'</th><td>'+cell(r[1])+'</td></tr>').join('')+'</table>'}
 function metaLine(segs){return '<p class="meta">'+segs.map(s=>s.u?'<a href="'+esc(s.u)+'">'+esc(s.t)+'</a>':esc(s.t)).join(' ／ ')+'</p>'}
 function f1(v){return (v===''||v==null)?'':Number(v).toFixed(1)}
-function dataLine(d){return '<h2>データについて</h2><p class="meta">確度：'+esc(d.c)+' ／ 出典：'+esc(d.s)+' ／ 最終更新：'+esc(d.u)+' ／ レコードID：'+esc(eid)+'</p>'}
+function dataLine(d){return '<h2>データについて</h2><p class="meta">出典：'+esc(d.s)+' ／ 最終更新：'+esc(d.u)+' ／ レコードID：'+esc(eid)+'</p>'}
 function lstTable(cols,rows,linkPrefix,db){return '<table class="lst"><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>'+rows.map(r=>{var cs=[];if(db){cs.push('<a href="'+linkPrefix+r.id+'">'+esc(db[r.id].name)+'</a>');if(cols[1]==='読み')cs.push(esc(db[r.id].reading||''));r.cells.forEach(c=>cs.push(esc(c)))}else{r.cells.forEach((c,i)=>cs.push(i===0?'<a href="'+linkPrefix+r.id+'">'+esc(c)+'</a>':esc(c)))}return '<tr>'+cs.map(c=>'<td>'+c+'</td>').join('')+'</tr>'}).join('')+'</table>'}
 
 function enhance(){
@@ -55,8 +55,8 @@ if(v.conn&&v.conn.length)h+='<h2>接続する路線</h2><ul class="items">'+v.co
 if(v.hakodate)h+='<p>函館本線の専用ページ（砂原支線を含む）は<a href="hakodate.html">こちら</a>です。</p>';
 function connCell(n){return n.conn.map(c=>'<a href="line.html?id='+c.id+'">'+esc(c.name)+'</a>').join('、')}
 function muniCell(n){return n.muni_id?'<a href="region.html?id='+n.muni_id+'">'+esc(n.muni)+'</a>':esc(n.muni)}
-if(v.rows&&v.rows.length)h+='<h2>拠点一覧（収集済みの範囲）</h2><table class="lst"><tr><th>名称</th><th>コード</th><th>区間 km</th><th>累計 km</th><th>接続路線</th><th>自治体</th></tr>'+v.rows.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.code)+'</td><td>'+f1(n.dist)+'</td><td>'+f1(n.cum)+'</td><td>'+connCell(n)+'</td><td>'+muniCell(n)+'</td></tr>').join('')+'</table>';
-else if(v.members&&v.members.length)h+='<h2>所属する拠点</h2><table class="lst"><tr><th>名称</th><th>コード</th><th>接続路線</th><th>自治体</th></tr>'+v.members.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.code)+'</td><td>'+connCell(n)+'</td><td>'+muniCell(n)+'</td></tr>').join('')+'</table>';
+if(v.rows&&v.rows.length)h+='<h2>拠点一覧（収集済みの範囲）</h2><table><tr><th>名称</th><th>コード</th><th>区間 km</th><th>累計 km</th><th>接続路線</th><th>自治体</th></tr>'+v.rows.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.code)+'</td><td>'+f1(n.dist)+'</td><td>'+f1(n.cum)+'</td><td>'+connCell(n)+'</td><td>'+muniCell(n)+'</td></tr>').join('')+'</table>';
+else if(v.members&&v.members.length)h+='<h2>所属する拠点</h2><table><tr><th>名称</th><th>コード</th><th>接続路線</th><th>自治体</th></tr>'+v.members.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.code)+'</td><td>'+connCell(n)+'</td><td>'+muniCell(n)+'</td></tr>').join('')+'</table>';
 else if(v.none)h+='<p>この路線は路線単位の記録のみで、拠点は未収集です。</p>';
 
 document.getElementById('app').innerHTML=h;
