@@ -1,10 +1,12 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>トップ | Node Atlas（ノード・アトラス）</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#222;background:#fff}a{color:#0b5cad}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:.35rem;text-align:left}th{background:#f5f5f5}input{width:100%;padding:.6rem;font-size:1rem;background:#f5f5f5;color:#222;border:1px solid #bbb;border-radius:4px}input[type=search]{width:60%}select{padding:.45rem}nav{margin-bottom:1rem}nav a{margin-right:1rem}.meta{color:#666;font-size:.9em}.warn{background:#fff3cd;border:1px solid #e0c060;padding:.6rem 1rem}.items{list-style:none;padding:0;margin:.5rem 0}.items li{padding:.35rem 0;border-bottom:1px solid #e5e5e5}.yomi{display:block;color:#666;font-size:.85em}details{margin:.4rem 0}details ul{padding-left:1.2rem}summary{cursor:pointer}h4{margin:.8rem 0 .2rem;font-size:1rem}</style></head>
-<body><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./about.html">このサイトについて</a></nav>
+<body><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./map.html">地図</a><a href="./about.html">このサイトについて</a></nav>
 <h1>Node Atlas（ノード・アトラス）</h1>
 <p>世界の交通網・国と地域・気候のデータを集め、変遷と繋がりをたどる個人プロジェクトの公開サイトです。現在は世界の国・地域の一覧、北海道の自治体（市区町村・振興局・郡・行政区）、函館本線を中心に収集した交通データ（鉄道・航路・空港・道路・索道）を収録しています。</p>
 <p><strong>収録データ：</strong>国 250 件 ／ 地域 5323 件 ／ 拠点 228 件 ／ 路線 112 件 ／ 区間 210 件</p>
-<h2>検索</h2>
+<style>.entries{display:flex;flex-wrap:wrap;gap:.8rem;margin:1rem 0}.entry{flex:1 1 200px;text-align:center;padding:1rem .6rem;border:1px solid #2b6cb0;border-radius:6px;background:#e8eef5;color:#1a365d;font-size:1.1rem;font-weight:bold;text-decoration:none}.entry:hover{background:#d7e3f2}</style>
+<div class="entries"><a class="entry" href="map.html">地図から検索</a><a class="entry" href="#search">キーワードから検索</a></div>
+<h2 id="search">検索</h2>
 <input id="q" placeholder="国名・地域名・駅名・コードで検索（例：北海道、白石、JP-01、H03）" oninput="f()">
 <div id="r"></div>
 <script src="search-data.js"></script>
@@ -18,5 +20,6 @@ el.innerHTML=m.length?'<table><tr><th>名称</th><th>種別</th><th>補足</th><
 <ul>
 <li><a href="countries.html">国・地域一覧</a> — ISO 3166-1の国と、ISO 3166-2の地域。日本は北海道の自治体も収録</li>
 <li><a href="transport.html">交通データ</a> — 函館本線を含む、交通網・路線・拠点・系統の一覧（バスは検証中のため未収録）</li>
+<li><a href="map.html">地図</a> — 座標のある拠点と自治体・地域を地図で表示</li>
 <li><a href="about.html">このサイトについて</a> — 目的、データの方針、出典とライセンス</li>
 </ul></body></html>
