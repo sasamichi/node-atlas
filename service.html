@@ -48,7 +48,7 @@ let h='';
 h+='<h1>'+esc(v.name)+'</h1>';
 h+='<h2>基本情報</h2>'+metaTable(v.info);
 if(v.via&&v.via.length)h+='<h2>経由路線</h2><ul class="items">'+v.via.map(x=>'<li><a href="line.html?id='+x.id+'">'+esc(x.name)+'</a>'+(x.sub?'（'+esc(x.sub)+'）':'')+'</li>').join('')+'</ul>';
-if(v.stops&&v.stops.length)h+='<h2>停車駅</h2><table><tr><th>停車順</th><th>名称</th><th>コード</th><th>区間 km</th><th>累計 km</th><th>自治体</th></tr>'+v.stops.map(x=>'<tr><td>'+esc(x.seq)+'</td><td><a href="node.html?id='+x.id+'">'+esc(x.name)+'</a></td><td>'+esc(x.code)+'</td><td>'+(x.dist==null?'—':f1(x.dist))+'</td><td>'+f1(x.cum)+'</td><td>'+(x.muni_id?'<a href="region.html?id='+x.muni_id+'">'+esc(x.muni)+'</a>':esc(x.muni))+'</td></tr>').join('')+'</table>';
+if(v.stops&&v.stops.length)h+='<h2>停車駅</h2><table><tr><th>停車順</th><th>名称</th><th>読み</th><th>コード</th><th>区間 km</th><th>累計 km</th><th>自治体</th></tr>'+v.stops.map(x=>'<tr><td>'+esc(x.seq)+'</td><td><a href="node.html?id='+x.id+'">'+esc(x.name)+'</a></td><td>'+esc(x.reading||'')+'</td><td>'+esc(x.code)+'</td><td>'+(x.dist==null?'—':f1(x.dist))+'</td><td>'+f1(x.cum)+'</td><td>'+(x.muni_id?'<a href="region.html?id='+x.muni_id+'">'+esc(x.muni)+'</a>':esc(x.muni))+'</td></tr>').join('')+'</table>';
 if(v.notes)h+='<h2>備考</h2><p>'+esc(v.notes)+'</p>';
 h+=dataLine(v.data);
 
