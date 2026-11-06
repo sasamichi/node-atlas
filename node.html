@@ -63,6 +63,7 @@ if(v.transfers&&v.transfers.length)h+='<h2>乗換・接続</h2><ul class="items"
 if(v.conns&&v.conns.length)h+='<h2>接続する拠点</h2><ul class="items">'+v.conns.map(l=>'<li><a href="node.html?id='+l.id+'">'+esc(l.name)+'</a></li>').join('')+'</ul>';
 if(v.stop_services&&v.stop_services.length)h+='<h2>停車する系統・列車</h2><ul class="items">'+v.stop_services.map(s=>'<li><a href="service.html?id='+s.id+'">'+esc(s.name)+'</a><span class="yomi">'+esc(s.sub)+'</span></li>').join('')+'</ul>';
 if(v.systems&&v.systems.length)h+='<h2>所属する交通網</h2><p>'+v.systems.map(s=>esc(s)).join('、')+'（<a href="transport.html">交通データ</a>）</p>';
+if(v.links&&v.links.length)h+='<h2>リンク</h2><ul class="items">'+v.links.map(x=>'<li><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.label)+'</a></li>').join('')+'</ul>';
 h+=dataLine(v.data);
 
 document.getElementById('app').innerHTML=h;

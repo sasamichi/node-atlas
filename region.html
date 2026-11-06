@@ -45,6 +45,12 @@ if(!v){fail('見つかりませんでした。');return}
 document.title=v.name+' | Node Atlas（ノード・アトラス）';
 let h='';
 
+const _cc=DB['__country'],_dd=DB['__data'];
+if(_cc&&!v.crumb)v.crumb=[_cc];
+if(_cc&&!(v.meta||[]).some(p=>p[0]==='国'))v.meta=[['国',{t:_cc.name,u:'countries/'+_cc.cc+'.html'}]].concat(v.meta||[]);
+if(!v.data&&_dd)v.data=_dd;
+if(!v.nodes_title)v.nodes_title=(v.kind==='市区町村'||v.kind==='行政区')?'この自治体の拠点':'この地域の拠点';
+if(!v.links)v.links=[];
 h+='<p class="meta">'+v.crumb.map(c=>c.cc?'<a href="countries/'+c.cc+'.html">'+esc(c.name)+'</a>':'<a href="region.html?id='+c.id+'">'+esc(DB[c.id].name)+'</a>').join(' &gt; ')+(v.crumb.length?' &gt; ':'')+esc(v.name)+'</p>';
 h+='<h1>'+esc(v.name)+'</h1>';
 const meta=[['名称',v.name]];
@@ -76,6 +82,7 @@ if(v.node_groups&&v.node_groups.length){
     if(g.plain.length)h+='<ul class="items">'+g.plain.map(n=>'<li><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></li>').join('')+'</ul>';
   });
 }
+if(v.links&&v.links.length)h+='<h2>リンク</h2><ul class="items">'+v.links.map(x=>'<li><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.label)+'</a></li>').join('')+'</ul>';
 h+=dataLine(v.data);
 
 document.getElementById('app').innerHTML=h;
