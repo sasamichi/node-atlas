@@ -26,7 +26,7 @@ var BASES = {
   std: ['https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {attribution: '地理院タイル', maxZoom: 18}],
   osm: ['https://tile.openstreetmap.de/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap contributors', maxZoom: 18}]
 };
-var KIND_COLOR = {'旅客駅':'#2b6cb0','貨物駅':'#2b6cb0','信号場':'#2b6cb0','停留場':'#2b6cb0','索道駅':'#2b6cb0','港':'#6b46c1','フェリーターミナル':'#6b46c1','空港':'#c53030','インターチェンジ':'#dd6b20','ジャンクション':'#dd6b20','サービスエリア':'#dd6b20','パーキングエリア':'#dd6b20','高速バス停留所':'#dd6b20'};
+var KIND_COLOR = {'旅客駅':'#2b6cb0','貨物駅':'#2b6cb0','信号場':'#2b6cb0','停留場':'#2b6cb0','索道駅':'#2b6cb0','港':'#6b46c1','フェリーターミナル':'#6b46c1','空港':'#c53030','インターチェンジ':'#dd6b20','ジャンクション':'#dd6b20','サービスエリア':'#dd6b20','パーキングエリア':'#dd6b20','道の駅':'#dd6b20','高速バス停留所':'#dd6b20'};
 function esc(s){return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 var map = L.map('map');
 var base = L.tileLayer(BASES.pale[0], BASES.pale[1]).addTo(map);
