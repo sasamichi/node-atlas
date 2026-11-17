@@ -2,42 +2,8 @@
 <title>地域 | Node Atlas（ノード・アトラス）</title><link rel="stylesheet" href="assets/site.css"></head>
 <body><div class="pagecard"><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./search.html">検索</a><a href="./map.html">地図</a><a href="./about.html">このサイトについて</a></nav>
 <div id="app"><p>読み込んでいます…</p></div>
+<script src="assets/common.js"></script>
 <script>
-const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const params=new URLSearchParams(location.search);
-const eid=params.get('id')||'';
-const ecc=eid.split('-')[1]||'';
-function fail(msg){document.getElementById('app').innerHTML='<p>'+esc(msg)+'</p>'}
-function cell(v){if(v&&typeof v==='object'){var u=v.u;if(/^RGN-/.test(u))u='region.html?id='+u;return '<a href="'+esc(u)+'">'+esc(v.t)+'</a>'}return esc(v)}
-function metaTable(rows){return '<table>'+rows.map(r=>'<tr><th>'+esc(r[0])+'</th><td>'+cell(r[1])+'</td></tr>').join('')+'</table>'}
-function metaLine(segs){return '<p class="meta">'+segs.map(s=>s.u?'<a href="'+esc(s.u)+'">'+esc(s.t)+'</a>':esc(s.t)).join(' ／ ')+'</p>'}
-function f1(v){return (v===''||v==null)?'':Number(v).toFixed(1)}
-function dataLine(d){return '<h2>データについて</h2><p class="meta">出典：'+esc(d.s)+' ／ 最終更新：'+esc(d.u)+' ／ レコードID：'+esc(eid)+'</p>'}
-function lstTable(cols,rows,linkPrefix,db){return '<table class="lst"><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>'+rows.map(r=>{var cs=[];if(db){cs.push('<a href="'+linkPrefix+r.id+'">'+esc(db[r.id].name)+'</a>');if(cols[1]==='読み')cs.push(esc(db[r.id].reading||''));r.cells.forEach(c=>cs.push(esc(c)))}else{r.cells.forEach((c,i)=>cs.push(i===0?'<a href="'+linkPrefix+r.id+'">'+esc(c)+'</a>':esc(c)))}return '<tr>'+cs.map(c=>'<td>'+c+'</td>').join('')+'</tr>'}).join('')+'</table>'}
-
-function enhance(){
-  document.querySelectorAll('table.lst').forEach(function(tb){
-    var head=tb.querySelector('tr'); if(!head) return;
-    var cols=[].map.call(head.querySelectorAll('th'),function(th){return th.textContent});
-    var rows=[].slice.call(tb.querySelectorAll('tr'),1);
-    rows.forEach(function(r,i){r.dataset.o=i});
-    var wrap=document.createElement('p');
-    var inp=document.createElement('input'); inp.type='search'; inp.placeholder='リスト内検索';
-    var sel=document.createElement('select');
-    sel.innerHTML='<option value="-1">並べ替え：初期順</option>'+cols.map(function(c,i){return '<option value="'+i+'">並べ替え：'+c+'</option>'}).join('');
-    wrap.appendChild(inp); wrap.appendChild(sel);
-    tb.parentNode.insertBefore(wrap, tb);
-    inp.addEventListener('input',function(){var v=inp.value.trim(); rows.forEach(function(r){r.style.display=(!v||r.textContent.indexOf(v)>=0)?'':'none'})});
-    sel.addEventListener('change',function(){var k=+sel.value;
-      rows.sort(function(a,b){ if(k<0) return (+a.dataset.o)-(+b.dataset.o);
-        var x=a.cells[k].textContent.trim(), y=b.cells[k].textContent.trim();
-        var nx=parseFloat(x), ny=parseFloat(y);
-        if(!isNaN(nx)&&!isNaN(ny)&&x!==''&&y!=='') return nx-ny;
-        return x.localeCompare(y,'ja')});
-      rows.forEach(function(r){tb.appendChild(r)})});
-  });
-}
-
 if(!eid||!ecc){fail('IDが指定されていません。')}
 else fetch('data/regions-'+ecc+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(DB=>{
 const v=DB[eid];
@@ -47,25 +13,25 @@ let h='';
 
 const _cc=DB['__country'],_dd=DB['__data'];
 if(_cc&&!v.crumb)v.crumb=[_cc];
-if(_cc&&!(v.meta||[]).some(p=>p[0]==='国'))v.meta=[['国',{t:_cc.name,u:'countries/'+_cc.cc+'.html'}]].concat(v.meta||[]);
+if(_cc&&!(v.meta||[]).some(p=>p[0]==='国'))v.meta=[['国',{t:_cc.name,u:'countries/'+_cc.cc+'.html',r:_cc.reading}]].concat(v.meta||[]);
 if(!v.data&&_dd)v.data=_dd;
 if(!v.nodes_title)v.nodes_title=(v.kind==='市区町村'||v.kind==='行政区')?'この自治体の拠点':'この地域の拠点';
 if(!v.links)v.links=[];
-h+='<p class="meta">'+v.crumb.map(c=>c.cc?'<a href="countries/'+c.cc+'.html">'+esc(c.name)+'</a>':'<a href="region.html?id='+c.id+'">'+esc(DB[c.id].name)+'</a>').join(' &gt; ')+(v.crumb.length?' &gt; ':'')+esc(v.name)+'</p>';
-h+='<h1>'+esc(v.name)+'</h1>';
+h+='<p class="meta">'+v.crumb.map(c=>c.cc?'<a href="countries/'+c.cc+'.html">'+rubyName(c.name,c.reading)+'</a>':'<a href="region.html?id='+c.id+'">'+rubyName(DB[c.id].name,DB[c.id].reading)+'</a>').join(' &gt; ')+(v.crumb.length?' &gt; ':'')+esc(v.name)+'</p>';
+h+='<h1>'+rubyName(v.name,v.reading)+'</h1>';
 const meta=[['名称',v.name]];
 if(v.reading)meta.push(['読み',v.reading]);
 meta.push(['種別',v.kind]);
-v.meta.forEach(r=>{var c=r[1];if(c&&typeof c==='object'&&c.i)c={t:DB[c.i].name,u:c.i};meta.push([r[0],c])});
+v.meta.forEach(r=>{var c=r[1];if(c&&typeof c==='object'&&c.i)c={t:DB[c.i].name,u:c.i,r:DB[c.i].reading};meta.push([r[0],c])});
 meta.push(['状態',v.status||'現存']);
-h+='<h2>基本情報</h2>'+metaTable(meta);
+h+='<h2>'+lb('基本情報')+'</h2>'+metaTable(meta);
 const notesTxt=v.notes||(v.nc?'出典リストは一部の国で最近の再編が未反映の可能性あり':'');
 if(notesTxt)h+='<p class="meta">'+esc(notesTxt)+'</p>';
 (v.sections||[]).forEach(sec=>{
   if(sec.type==='table'){
-    h+='<h2>'+esc(sec.title)+'（'+sec.rows.length+'）</h2>'+lstTable(sec.cols,sec.rows,'region.html?id=',DB);
+    h+='<h2>'+lb(sec.title)+'（'+sec.rows.length+'）</h2>'+lstTable(sec.cols,sec.rows,'region.html?id=',DB);
   }else{
-    h+='<h2>'+esc(sec.title)+'（'+sec.items.length+'）</h2>';
+    h+='<h2>'+lb(sec.title)+'（'+sec.items.length+'）</h2>';
     sec.items.forEach(it=>{
       const iv=DB[it.id];
       h+='<details><summary><a href="region.html?id='+it.id+'">'+esc(iv.name)+'</a>（'+it.rows.length+'）'+(iv.reading?' <span class="meta">'+esc(iv.reading)+'</span>':'')+'</summary>'+lstTable(it.cols,it.rows,'region.html?id=',DB)+'</details>';
@@ -73,13 +39,13 @@ if(notesTxt)h+='<p class="meta">'+esc(notesTxt)+'</p>';
   }
 });
 if(v.node_groups&&v.node_groups.length){
-  h+='<h2>'+esc(v.nodes_title)+'（'+v.nodes_count+'）</h2>';
+  h+='<h2>'+lb(v.nodes_title)+'（'+v.nodes_count+'）</h2>';
   v.node_groups.forEach(g=>{
-    h+='<h3>'+esc(g.kind)+'（'+g.count+'）</h3>';
+    h+='<h3>'+lb(g.kind)+'（'+g.count+'）</h3>';
     g.lines.forEach(lg=>{
-      h+='<h4><a href="line.html?id='+lg.id+'">'+esc(lg.name)+'</a>（'+lg.nodes.length+'）</h4><ul class="items">'+lg.nodes.map(n=>'<li><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></li>').join('')+'</ul>';
+      h+='<h4><a href="line.html?id='+lg.id+'">'+esc(lg.name)+'</a>（'+lg.nodes.length+'）</h4><ul class="items">'+lg.nodes.map(n=>'<li><a href="node.html?id='+n.id+'">'+rubyName(n.name,(DB['__nr']||{})[n.id])+'</a></li>').join('')+'</ul>';
     });
-    if(g.plain.length)h+='<ul class="items">'+g.plain.map(n=>'<li><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></li>').join('')+'</ul>';
+    if(g.plain.length)h+='<ul class="items">'+g.plain.map(n=>'<li><a href="node.html?id='+n.id+'">'+rubyName(n.name,(DB['__nr']||{})[n.id])+'</a></li>').join('')+'</ul>';
   });
 }
 if(v.links&&v.links.length)h+='<h2>リンク</h2><ul class="items">'+v.links.map(x=>'<li><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.label)+'</a></li>').join('')+'</ul>';

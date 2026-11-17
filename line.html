@@ -2,42 +2,8 @@
 <title>路線 | Node Atlas（ノード・アトラス）</title><link rel="stylesheet" href="assets/site.css"></head>
 <body><div class="pagecard"><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./search.html">検索</a><a href="./map.html">地図</a><a href="./about.html">このサイトについて</a></nav>
 <div id="app"><p>読み込んでいます…</p></div>
+<script src="assets/common.js"></script>
 <script>
-const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const params=new URLSearchParams(location.search);
-const eid=params.get('id')||'';
-const ecc=eid.split('-')[1]||'';
-function fail(msg){document.getElementById('app').innerHTML='<p>'+esc(msg)+'</p>'}
-function cell(v){if(v&&typeof v==='object'){var u=v.u;if(/^RGN-/.test(u))u='region.html?id='+u;return '<a href="'+esc(u)+'">'+esc(v.t)+'</a>'}return esc(v)}
-function metaTable(rows){return '<table>'+rows.map(r=>'<tr><th>'+esc(r[0])+'</th><td>'+cell(r[1])+'</td></tr>').join('')+'</table>'}
-function metaLine(segs){return '<p class="meta">'+segs.map(s=>s.u?'<a href="'+esc(s.u)+'">'+esc(s.t)+'</a>':esc(s.t)).join(' ／ ')+'</p>'}
-function f1(v){return (v===''||v==null)?'':Number(v).toFixed(1)}
-function dataLine(d){return '<h2>データについて</h2><p class="meta">出典：'+esc(d.s)+' ／ 最終更新：'+esc(d.u)+' ／ レコードID：'+esc(eid)+'</p>'}
-function lstTable(cols,rows,linkPrefix,db){return '<table class="lst"><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>'+rows.map(r=>{var cs=[];if(db){cs.push('<a href="'+linkPrefix+r.id+'">'+esc(db[r.id].name)+'</a>');if(cols[1]==='読み')cs.push(esc(db[r.id].reading||''));r.cells.forEach(c=>cs.push(esc(c)))}else{r.cells.forEach((c,i)=>cs.push(i===0?'<a href="'+linkPrefix+r.id+'">'+esc(c)+'</a>':esc(c)))}return '<tr>'+cs.map(c=>'<td>'+c+'</td>').join('')+'</tr>'}).join('')+'</table>'}
-
-function enhance(){
-  document.querySelectorAll('table.lst').forEach(function(tb){
-    var head=tb.querySelector('tr'); if(!head) return;
-    var cols=[].map.call(head.querySelectorAll('th'),function(th){return th.textContent});
-    var rows=[].slice.call(tb.querySelectorAll('tr'),1);
-    rows.forEach(function(r,i){r.dataset.o=i});
-    var wrap=document.createElement('p');
-    var inp=document.createElement('input'); inp.type='search'; inp.placeholder='リスト内検索';
-    var sel=document.createElement('select');
-    sel.innerHTML='<option value="-1">並べ替え：初期順</option>'+cols.map(function(c,i){return '<option value="'+i+'">並べ替え：'+c+'</option>'}).join('');
-    wrap.appendChild(inp); wrap.appendChild(sel);
-    tb.parentNode.insertBefore(wrap, tb);
-    inp.addEventListener('input',function(){var v=inp.value.trim(); rows.forEach(function(r){r.style.display=(!v||r.textContent.indexOf(v)>=0)?'':'none'})});
-    sel.addEventListener('change',function(){var k=+sel.value;
-      rows.sort(function(a,b){ if(k<0) return (+a.dataset.o)-(+b.dataset.o);
-        var x=a.cells[k].textContent.trim(), y=b.cells[k].textContent.trim();
-        var nx=parseFloat(x), ny=parseFloat(y);
-        if(!isNaN(nx)&&!isNaN(ny)&&x!==''&&y!=='') return nx-ny;
-        return x.localeCompare(y,'ja')});
-      rows.forEach(function(r){tb.appendChild(r)})});
-  });
-}
-
 if(!eid||!ecc){fail('IDが指定されていません。')}
 else fetch('data/lines-'+ecc+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(DB=>{
 const v=DB[eid];
@@ -45,18 +11,18 @@ if(!v){fail('見つかりませんでした。');return}
 document.title=v.name+' | Node Atlas（ノード・アトラス）';
 let h='';
 
-h+='<h1>'+esc(v.name)+'</h1>';
-h+='<h2>基本情報</h2>'+metaTable(v.info);
+h+='<h1>'+rubyName(v.name,pairReading(v.info))+'</h1>';
+h+='<h2>'+lb('基本情報')+'</h2>'+metaTable(v.info);
 if(v.notes)h+='<p>'+esc(v.notes)+'</p>';
-if(v.branches&&v.branches.length)h+='<h2>支線（'+v.branches.length+'）</h2><ul class="items">'+v.branches.map(b=>'<li><a href="line.html?id='+b.id+'">'+esc(b.name)+'</a>'+(b.note?'<span class="yomi">'+esc(b.note)+'</span>':'')+'</li>').join('')+'</ul>';
-if(v.branch_of)h+='<h2>本線</h2><ul class="items"><li><a href="line.html?id='+v.branch_of.id+'">'+esc(v.branch_of.name)+'</a>'+(v.branch_of.note?'<span class="yomi">'+esc(v.branch_of.note)+'</span>':'')+'</li></ul>';
-if(v.svcs&&v.svcs.length)h+='<h2>運行系統・列車（'+v.svcs.length+'）</h2><ul class="items">'+v.svcs.map(s=>'<li><a href="service.html?id='+s.id+'">'+esc(s.name)+'</a><span class="yomi">'+esc(s.sub)+'</span></li>').join('')+'</ul>';
-if(v.conn&&v.conn.length)h+='<h2>接続する路線</h2><ul class="items">'+v.conn.map(c=>'<li><a href="line.html?id='+c.id+'">'+esc(c.name)+'</a></li>').join('')+'</ul>';
+if(v.branches&&v.branches.length)h+='<h2>'+lb('支線')+'（'+v.branches.length+'）</h2><ul class="items">'+v.branches.map(b=>'<li><a href="line.html?id='+b.id+'">'+rubyName(DB[b.id].name,pairReading(DB[b.id].info))+'</a>'+(b.note?'<span class="yomi">'+esc(b.note)+'</span>':'')+'</li>').join('')+'</ul>';
+if(v.branch_of)h+='<h2>'+lb('本線')+'</h2><ul class="items"><li><a href="line.html?id='+v.branch_of.id+'">'+rubyName(DB[v.branch_of.id].name,pairReading(DB[v.branch_of.id].info))+'</a>'+(v.branch_of.note?'<span class="yomi">'+esc(v.branch_of.note)+'</span>':'')+'</li></ul>';
+if(v.svcs&&v.svcs.length)h+='<h2>'+lb('運行系統・列車')+'（'+v.svcs.length+'）</h2><ul class="items">'+v.svcs.map(s=>'<li><a href="service.html?id='+s.id+'">'+rubyName(s.name,s.reading)+'</a><span class="yomi">'+esc(s.sub)+'</span></li>').join('')+'</ul>';
+if(v.conn&&v.conn.length)h+='<h2>'+lb('接続する路線')+'</h2><ul class="items">'+v.conn.map(cid=>'<li><a href="line.html?id='+cid+'">'+rubyName(DB[cid].name,pairReading(DB[cid].info))+'</a></li>').join('')+'</ul>';
 if(v.hakodate)h+='<p>函館本線の専用ページ（砂原支線を含む）は<a href="hakodate.html">こちら</a>です。</p>';
-function connCell(n){return n.conn.map(c=>'<a href="line.html?id='+c.id+'">'+esc(c.name)+'</a>').join('、')}
+function connCell(n){return n.conn.map(cid=>'<a href="line.html?id='+cid+'">'+rubyName(DB[cid].name,pairReading(DB[cid].info))+'</a>').join('、')}
 function muniCell(n){return n.muni_id?'<a href="region.html?id='+n.muni_id+'">'+esc(n.muni)+'</a>':esc(n.muni)}
-if(v.rows&&v.rows.length)h+='<h2>拠点一覧（収集済みの範囲）</h2><table><tr><th>名称</th><th>読み</th><th>コード</th><th>区間 km</th><th>累計 km</th><th>接続路線</th><th>自治体</th></tr>'+v.rows.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.reading||'')+'</td><td>'+esc(n.code)+'</td><td>'+f1(n.dist)+'</td><td>'+f1(n.cum)+'</td><td>'+connCell(n)+'</td><td>'+muniCell(n)+'</td></tr>').join('')+'</table>';
-else if(v.members&&v.members.length)h+='<h2>所属する拠点</h2><table><tr><th>名称</th><th>読み</th><th>コード</th><th>接続路線</th><th>自治体</th></tr>'+v.members.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.reading||'')+'</td><td>'+esc(n.code)+'</td><td>'+connCell(n)+'</td><td>'+muniCell(n)+'</td></tr>').join('')+'</table>';
+if(v.rows&&v.rows.length)h+='<h2>'+lb('拠点一覧（収集済みの範囲）')+'</h2><table><tr><th>'+lb('名称')+'</th><th>'+lb('読み')+'</th><th class="nw">コード</th><th class="nw">'+lb('区間 km')+'</th><th class="nw">'+lb('累計 km')+'</th><th>'+lb('接続路線')+'</th><th>'+lb('自治体')+'</th></tr>'+v.rows.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.reading||'')+'</td><td class="nw">'+esc(n.code)+'</td><td class="nw">'+f1(n.dist)+'</td><td class="nw">'+f1(n.cum)+'</td><td>'+connCell(n)+'</td><td>'+muniCell(n)+'</td></tr>').join('')+'</table>';
+else if(v.members&&v.members.length)h+='<h2>'+lb('所属する拠点')+'</h2><table><tr><th>'+lb('名称')+'</th><th>'+lb('読み')+'</th><th class="nw">コード</th><th>'+lb('接続路線')+'</th><th>'+lb('自治体')+'</th></tr>'+v.members.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.reading||'')+'</td><td class="nw">'+esc(n.code)+'</td><td>'+connCell(n)+'</td><td>'+muniCell(n)+'</td></tr>').join('')+'</table>';
 else if(v.none)h+='<p>この路線は路線単位の記録のみで、拠点は未収集です。</p>';
 if(v.links&&v.links.length)h+='<h2>リンク</h2><ul class="items">'+v.links.map(x=>'<li><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.label)+'</a></li>').join('')+'</ul>';
 

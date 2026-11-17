@@ -6,6 +6,7 @@
 <p class="meta">座標のある拠点と、自治体・地域（政庁所在地）を表示しています。マーカーを押すと詳細ページへのリンクが出ます。路線の線は表示しません（点データのみの方針）。</p>
 <div class="mapctl">
 <label>背景地図 <select id="baseSel"><option value="pale">地理院タイル（淡色）</option><option value="std">地理院タイル（標準）</option><option value="osm">OpenStreetMap</option></select></label>
+<label><input type="checkbox" id="ck-alltrans" checked> <b>交通網すべて</b></label>
 <label><input type="checkbox" id="ck-rail" checked> 鉄道 <span id="cnt-rail"></span></label>
 <label><input type="checkbox" id="ck-road" checked> 道路 <span id="cnt-road"></span></label>
 <label><input type="checkbox" id="ck-bus" checked> バス <span id="cnt-bus"></span></label>
@@ -28,6 +29,8 @@ var BASES = {
 };
 var KIND_COLOR = {'旅客駅':'#2b6cb0','貨物駅':'#2b6cb0','信号場':'#2b6cb0','停留場':'#2b6cb0','索道駅':'#2b6cb0','港':'#6b46c1','フェリーターミナル':'#6b46c1','空港':'#c53030','インターチェンジ':'#dd6b20','ジャンクション':'#dd6b20','サービスエリア':'#dd6b20','パーキングエリア':'#dd6b20','道の駅':'#dd6b20','高速バス停留所':'#dd6b20'};
 function esc(s){return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function rubyName(nm,rd){if(!rd)return esc(nm);var hg=String(nm).replace(/[ァ-ヶ]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60)});if(hg===rd)return esc(nm);return '<ruby>'+esc(nm)+'<rt>'+esc(rd)+'</rt></ruby>'}
+function pairReading(pairs){if(!pairs)return '';for(var i=0;i<pairs.length;i++){if(pairs[i][0]==='読み')return pairs[i][1]}return ''}
 var map = L.map('map');
 var base = L.tileLayer(BASES.pale[0], BASES.pale[1]).addTo(map);
 var GROUPS = ['rail', 'road', 'bus', 'air', 'sea', 'seat', 'wst'];
@@ -64,6 +67,13 @@ document.getElementById('baseSel').addEventListener('change', function(e){
 GROUPS.forEach(function(g){
   document.getElementById('ck-' + g).addEventListener('change', function(e){ if (e.target.checked) map.addLayer(layers[g]); else map.removeLayer(layers[g]); });
 });
+var TRANS = ['rail', 'road', 'bus', 'air', 'sea'];
+var allT = document.getElementById('ck-alltrans');
+function transBoxes(){ return TRANS.map(function(g){ return document.getElementById('ck-' + g); }).filter(function(ck){ return !ck.disabled; }); }
+function syncAll(){ var bs = transBoxes(); var on = bs.filter(function(ck){ return ck.checked; }).length; allT.checked = (bs.length > 0 && on === bs.length); allT.indeterminate = (on > 0 && on < bs.length); }
+allT.addEventListener('change', function(e){ transBoxes().forEach(function(ck){ if (ck.checked !== e.target.checked) { ck.checked = e.target.checked; ck.dispatchEvent(new Event('change')); } }); syncAll(); });
+GROUPS.forEach(function(g){ document.getElementById('ck-' + g).addEventListener('change', syncAll); });
+syncAll();
 })();
 </script>
 </div></body></html>
