@@ -4,6 +4,8 @@ const params=new URLSearchParams(location.search);
 const eid=params.get('id')||'';
 const ecc=eid.split('-')[1]||'';
 function fail(msg){document.getElementById('app').innerHTML='<p>'+esc(msg)+'</p>'}
+function rubyName(nm,rd){if(!rd)return esc(nm);var hg=String(nm).replace(/[\u30a1-\u30f6]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60)});if(hg===rd)return esc(nm);return '<ruby>'+esc(nm)+'<rt>'+esc(rd)+'</rt></ruby>'}
+function pairReading(pairs){if(!pairs)return '';for(var i=0;i<pairs.length;i++){if(pairs[i][0]==='読み')return pairs[i][1]}return ''}
 function cell(v){if(v&&typeof v==='object'){if(!v.u)return rubyName(v.t,v.r);var u=v.u;if(/^RGN-/.test(u))u='region.html?id='+u;return '<a href="'+esc(u)+'">'+rubyName(v.t,v.r)+'</a>'}return esc(v)}
 const LB={
 "基本情報":"<ruby>基本情報<rt>きほんじょうほう</rt></ruby>","備考":"<ruby>備考<rt>びこう</rt></ruby>","出典":"<ruby>出典<rt>しゅってん</rt></ruby>","最終更新":"<ruby>最終更新<rt>さいしゅうこうしん</rt></ruby>",
