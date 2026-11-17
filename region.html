@@ -2,7 +2,7 @@
 <title>地域 | Node Atlas（ノード・アトラス）</title><link rel="stylesheet" href="assets/site.css"></head>
 <body><div class="pagecard"><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./search.html">検索</a><a href="./map.html">地図</a><a href="./about.html">このサイトについて</a></nav>
 <div id="app"><p>読み込んでいます…</p></div>
-<script src="assets/common.js"></script>
+<script src="assets/common.js?v=daba14fb"></script>
 <script>
 if(!eid||!ecc){fail('IDが指定されていません。')}
 else fetch('data/regions-'+ecc+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(DB=>{
