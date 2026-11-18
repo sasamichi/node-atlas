@@ -2,7 +2,7 @@
 <title>路線 | Node Atlas（ノード・アトラス）</title><link rel="stylesheet" href="assets/site.css"></head>
 <body><div class="pagecard"><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./search.html">検索</a><a href="./map.html">地図</a><a href="./about.html">このサイトについて</a></nav>
 <div id="app"><p>読み込んでいます…</p></div>
-<script src="assets/common.js?v=daba14fb"></script>
+<script src="assets/common.js?v=e8a05019"></script>
 <script>
 if(!eid||!ecc){fail('IDが指定されていません。')}
 else fetch('data/lines-'+ecc+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(DB=>{
@@ -19,12 +19,13 @@ if(v.branch_of)h+='<h2>'+lb('本線')+'</h2><ul class="items"><li><a href="line.
 if(v.svcs&&v.svcs.length)h+='<h2>'+lb('運行系統・列車')+'（'+v.svcs.length+'）</h2><ul class="items">'+v.svcs.map(s=>'<li><a href="service.html?id='+s.id+'">'+rubyName(s.name,s.reading)+'</a><span class="yomi">'+esc(s.sub)+'</span></li>').join('')+'</ul>';
 if(v.conn&&v.conn.length)h+='<h2>'+lb('接続する路線')+'</h2><ul class="items">'+v.conn.map(cid=>'<li><a href="line.html?id='+cid+'">'+rubyName(DB[cid].name,pairReading(DB[cid].info))+'</a></li>').join('')+'</ul>';
 if(v.hakodate)h+='<p>函館本線の専用ページ（砂原支線を含む）は<a href="hakodate.html">こちら</a>です。</p>';
-function connCell(n){return n.conn.map(cid=>'<a href="line.html?id='+cid+'">'+rubyName(DB[cid].name,pairReading(DB[cid].info))+'</a>').join('、')}
-function muniCell(n){return n.muni_id?'<a href="region.html?id='+n.muni_id+'">'+esc(n.muni)+'</a>':esc(n.muni)}
-if(v.rows&&v.rows.length)h+='<h2>'+lb('拠点一覧（収集済みの範囲）')+'</h2><table><tr><th>'+lb('名称')+'</th><th>'+lb('読み')+'</th><th class="nw">コード</th><th class="nw">'+lb('区間 km')+'</th><th class="nw">'+lb('累計 km')+'</th><th>'+lb('接続路線')+'</th><th>'+lb('自治体')+'</th></tr>'+v.rows.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.reading||'')+'</td><td class="nw">'+esc(n.code)+'</td><td class="nw">'+f1(n.dist)+'</td><td class="nw">'+f1(n.cum)+'</td><td>'+connCell(n)+'</td><td>'+muniCell(n)+'</td></tr>').join('')+'</table>';
-else if(v.members&&v.members.length)h+='<h2>'+lb('所属する拠点')+'</h2><table><tr><th>'+lb('名称')+'</th><th>'+lb('読み')+'</th><th class="nw">コード</th><th>'+lb('接続路線')+'</th><th>'+lb('自治体')+'</th></tr>'+v.members.map(n=>'<tr><td><a href="node.html?id='+n.id+'">'+esc(n.name)+'</a></td><td>'+esc(n.reading||'')+'</td><td class="nw">'+esc(n.code)+'</td><td>'+connCell(n)+'</td><td>'+muniCell(n)+'</td></tr>').join('')+'</table>';
+const _ND=DB['__nodes']||{};
+function connCell(nid){return ((DB['__conns']||{})[nid]||[]).filter(cid=>cid!==eid).map(cid=>'<a href="line.html?id='+cid+'">'+rubyName(DB[cid].name,pairReading(DB[cid].info))+'</a>').join('、')}
+function muniCell(nid){var e=_ND[nid];if(!e)return '';return e[2]?'<a href="region.html?id='+e[2]+'">'+esc(e[3])+'</a>':esc(e[3])}
+if(v.rows&&v.rows.length)h+='<h2>'+lb('拠点一覧（収集済みの範囲）')+'</h2><table><tr><th>'+lb('名称')+'</th><th>'+lb('読み')+'</th><th class="nw">コード</th><th class="nw">'+lb('区間 km')+'</th><th class="nw">'+lb('累計 km')+'</th><th>'+lb('接続路線')+'</th><th>'+lb('自治体')+'</th></tr>'+v.rows.map(n=>'<tr><td><a href="node.html?id='+n[0]+'">'+esc(_ND[n[0]][0])+'</a></td><td>'+esc(_ND[n[0]][1]||'')+'</td><td class="nw">'+esc(n[3])+'</td><td class="nw">'+f1(n[2])+'</td><td class="nw">'+f1(n[1])+'</td><td>'+connCell(n[0])+'</td><td>'+muniCell(n[0])+'</td></tr>').join('')+'</table>';
+else if(v.members&&v.members.length)h+='<h2>'+lb('所属する拠点')+'</h2><table><tr><th>'+lb('名称')+'</th><th>'+lb('読み')+'</th><th class="nw">コード</th><th>'+lb('接続路線')+'</th><th>'+lb('自治体')+'</th></tr>'+v.members.map(n=>'<tr><td><a href="node.html?id='+n[0]+'">'+esc(_ND[n[0]][0])+'</a></td><td>'+esc(_ND[n[0]][1]||'')+'</td><td class="nw">'+esc(n[1])+'</td><td>'+connCell(n[0])+'</td><td>'+muniCell(n[0])+'</td></tr>').join('')+'</table>';
 else if(v.none)h+='<p>この路線は路線単位の記録のみで、拠点は未収集です。</p>';
-if(v.links&&v.links.length)h+='<h2>リンク</h2><ul class="items">'+v.links.map(x=>'<li><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.label)+'</a></li>').join('')+'</ul>';
+if(v.links&&v.links.length)h+=linksHtml(v.links, v.name);
 
 document.getElementById('app').innerHTML=h;
 enhance();

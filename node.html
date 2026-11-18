@@ -2,7 +2,7 @@
 <title>拠点 | Node Atlas（ノード・アトラス）</title><link rel="stylesheet" href="assets/site.css"></head>
 <body><div class="pagecard"><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./search.html">検索</a><a href="./map.html">地図</a><a href="./about.html">このサイトについて</a></nav>
 <div id="app"><p>読み込んでいます…</p></div>
-<script src="assets/common.js?v=daba14fb"></script>
+<script src="assets/common.js?v=e8a05019"></script>
 <script>
 if(!eid||!ecc){fail('IDが指定されていません。')}
 else fetch('data/nodes-'+ecc+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(DB=>{
@@ -11,18 +11,20 @@ if(!v){fail('見つかりませんでした。');return}
 document.title=v.name+' | Node Atlas（ノード・アトラス）';
 let h='';
 
-const _dd=DB['__data'],_LM=DB['__lines']||{};
-if(!v.data&&_dd)v.data=_dd;
+const _dd=DB['__data'],_LM=DB['__lines']||{},_RG=DB['__rgn']||{};
+if(v.data==null&&_dd)v.data=_dd;
+if(typeof v.data==='number')v.data=DB['__datas'][v.data];
 h+='<h1>'+rubyName(v.name,pairReading(v.meta))+'</h1>';
-h+='<h2>'+lb('基本情報')+'</h2>'+metaTable(v.meta);
+const _meta=[['名称',v.name]].concat(v.meta.map(r=>{var c=r[1];if(c&&typeof c==='object'&&c.i)c={t:_RG[c.i][0],u:c.i,r:_RG[c.i][1]};return [r[0],c]}));
+h+='<h2>'+lb('基本情報')+'</h2>'+metaTable(_meta);
 if(v.notes)h+='<p>'+esc(v.notes)+'</p>';
 if(v.positions&&v.positions.length){
   h+='<h2>'+lb('路線での位置')+'</h2>';
   v.positions.forEach(p=>{
-    h+='<h4><a href="line.html?id='+p.line_id+'">'+rubyName(_LM[p.line_id][0],_LM[p.line_id][1])+'</a></h4><table><tr><th>'+lb('前の拠点')+'</th><th>'+lb('この拠点')+'</th><th>'+lb('次の拠点')+'</th></tr><tr>';
-    h+='<td>'+(p.prev?'<a href="node.html?id='+p.prev.id+'">'+rubyName(DB[p.prev.id].name,pairReading(DB[p.prev.id].meta))+'</a>（'+f1(p.prev.dist)+' km）'+(p.prev.gap?' ※途中駅未収集':''):'―')+'</td>';
-    h+='<td>'+rubyName(v.name,pairReading(v.meta))+'（累計 '+f1(p.cum)+' km）</td>';
-    h+='<td>'+(p.next?'<a href="node.html?id='+p.next.id+'">'+rubyName(DB[p.next.id].name,pairReading(DB[p.next.id].meta))+'</a>（'+f1(p.next.dist)+' km）'+(p.next.gap?' ※途中駅未収集':''):'―')+'</td>';
+    h+='<h4><a href="line.html?id='+p[0]+'">'+rubyName(_LM[p[0]][0],_LM[p[0]][1])+'</a></h4><table><tr><th>'+lb('前の拠点')+'</th><th>'+lb('この拠点')+'</th><th>'+lb('次の拠点')+'</th></tr><tr>';
+    h+='<td>'+(p[2]?'<a href="node.html?id='+p[2][0]+'">'+rubyName(DB[p[2][0]].name,pairReading(DB[p[2][0]].meta))+'</a>（'+f1(p[2][1])+' km）'+(p[2][2]?' ※途中駅未収集':''):'―')+'</td>';
+    h+='<td>'+rubyName(v.name,pairReading(v.meta))+'（累計 '+f1(p[1])+' km）</td>';
+    h+='<td>'+(p[3]?'<a href="node.html?id='+p[3][0]+'">'+rubyName(DB[p[3][0]].name,pairReading(DB[p[3][0]].meta))+'</a>（'+f1(p[3][1])+' km）'+(p[3][2]?' ※途中駅未収集':''):'―')+'</td>';
     h+='</tr></table>';
   });
 }
@@ -31,7 +33,7 @@ if(v.transfers&&v.transfers.length)h+='<h2>'+lb('乗換・接続')+'</h2><ul cla
 if(v.conns&&v.conns.length)h+='<h2>'+lb('接続する拠点')+'</h2><ul class="items">'+v.conns.map(l=>'<li><a href="node.html?id='+l.id+'">'+rubyName(DB[l.id].name,pairReading(DB[l.id].meta))+'</a></li>').join('')+'</ul>';
 if(v.stop_services&&v.stop_services.length)h+='<h2>'+lb('停車する系統・列車')+'</h2><ul class="items">'+v.stop_services.map(s=>'<li><a href="service.html?id='+s.id+'">'+rubyName(s.name,s.reading)+'</a><span class="yomi">'+esc(s.sub)+'</span></li>').join('')+'</ul>';
 if(v.systems&&v.systems.length)h+='<h2>'+lb('所属する交通網')+'</h2><p>'+v.systems.map(s=>rubyName(s.t,s.r)).join('、')+'（<a href="transport.html">交通データ</a>）</p>';
-if(v.links&&v.links.length)h+='<h2>リンク</h2><ul class="items">'+v.links.map(x=>'<li><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.label)+'</a></li>').join('')+'</ul>';
+if(v.links&&v.links.length)h+=linksHtml(v.links, v.name);
 h+=dataLine(v.data);
 
 document.getElementById('app').innerHTML=h;

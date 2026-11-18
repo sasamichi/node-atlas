@@ -37,6 +37,7 @@ var GROUPS = ['rail', 'road', 'bus', 'air', 'sea', 'seat', 'wst'];
 var layers = {}, counts = {};
 GROUPS.forEach(function(g){ layers[g] = L.layerGroup().addTo(map); counts[g] = 0; });
 fetch('data/map-points.json').then(function(r){return r.json()}).then(function(pts){
+  pts = pts.map(function(a){ return {t: a[0], id: a[1], name: a[2], reading: a[3], kind: a[4], g: a[5], sub: a[6], lat: a[7], lng: a[8]}; });
   var bounds = [];
   pts.forEach(function(p){
     var isSeat = p.t === 's';

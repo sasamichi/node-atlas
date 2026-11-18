@@ -6,7 +6,10 @@ const ecc=eid.split('-')[1]||'';
 function fail(msg){document.getElementById('app').innerHTML='<p>'+esc(msg)+'</p>'}
 function rubyName(nm,rd){if(!rd)return esc(nm);var hg=String(nm).replace(/[\u30a1-\u30f6]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60)});if(hg===rd)return esc(nm);return '<ruby>'+esc(nm)+'<rt>'+esc(rd)+'</rt></ruby>'}
 function pairReading(pairs){if(!pairs)return '';for(var i=0;i<pairs.length;i++){if(pairs[i][0]==='読み')return pairs[i][1]}return ''}
-function cell(v){if(v&&typeof v==='object'){if(!v.u)return rubyName(v.t,v.r);var u=v.u;if(/^RGN-/.test(u))u='region.html?id='+u;return '<a href="'+esc(u)+'">'+rubyName(v.t,v.r)+'</a>'}return esc(v)}
+function cell(v){if(v&&typeof v==='object'){if(!v.u){if(typeof v.t==='string'&&/^-?\d+(\.\d+)?, -?\d+(\.\d+)?$/.test(v.t))return '<a href="https://www.google.com/maps?q='+v.t.replace(', ',',')+'">'+esc(v.t)+'</a>';return rubyName(v.t,v.r)}var u=v.u;if(/^RGN-/.test(u))u='region.html?id='+u;return '<a href="'+esc(u)+'">'+rubyName(v.t,v.r)+'</a>'}return esc(v)}
+function pyq(s){return encodeURIComponent(s.replace(/ /g,'_')).replace(/%2F/g,'/').replace(/!/g,'%21').replace(/'/g,'%27').replace(/\*/g,'%2A')}
+function linkObj(x,nm){if(!Array.isArray(x))return x;var k=x[0];if(k==='w')return{label:'Wikipedia',url:'https://ja.wikipedia.org/wiki/'+pyq(x.length>1?x[1]:nm)};if(k==='d')return{label:'Wikidata',url:'https://www.wikidata.org/wiki/'+x[1]};if(k==='o')return{label:'OpenStreetMap',url:'https://www.openstreetmap.org/'+x[1]};if(k==='r')return{label:'OpenStreetMap',url:'https://www.openstreetmap.org/relation/'+x[1]};return{label:x[1],url:x[2]}}
+function linksHtml(links,nm){return '<h2>リンク</h2><ul class="items">'+links.map(x=>{var y=linkObj(x,nm);return '<li><a href="'+esc(y.url)+'" target="_blank" rel="noopener">'+esc(y.label)+'</a></li>'}).join('')+'</ul>'}
 const LB={
 "基本情報":"<ruby>基本情報<rt>きほんじょうほう</rt></ruby>","備考":"<ruby>備考<rt>びこう</rt></ruby>","出典":"<ruby>出典<rt>しゅってん</rt></ruby>","最終更新":"<ruby>最終更新<rt>さいしゅうこうしん</rt></ruby>",
 "名称":"<ruby>名称<rt>めいしょう</rt></ruby>","読み":"<ruby>読み<rt>よみ</rt></ruby>","種別":"<ruby>種別<rt>しゅべつ</rt></ruby>","状態":"<ruby>状態<rt>じょうたい</rt></ruby>","国":"<ruby>国<rt>くに</rt></ruby>",

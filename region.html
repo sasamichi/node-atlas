@@ -2,7 +2,7 @@
 <title>地域 | Node Atlas（ノード・アトラス）</title><link rel="stylesheet" href="assets/site.css"></head>
 <body><div class="pagecard"><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./search.html">検索</a><a href="./map.html">地図</a><a href="./about.html">このサイトについて</a></nav>
 <div id="app"><p>読み込んでいます…</p></div>
-<script src="assets/common.js?v=daba14fb"></script>
+<script src="assets/common.js?v=e8a05019"></script>
 <script>
 if(!eid||!ecc){fail('IDが指定されていません。')}
 else fetch('data/regions-'+ecc+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(DB=>{
@@ -12,12 +12,14 @@ document.title=v.name+' | Node Atlas（ノード・アトラス）';
 let h='';
 
 const _cc=DB['__country'],_dd=DB['__data'];
-if(_cc&&!v.crumb)v.crumb=[_cc];
+const _crumb=_cc?[_cc].concat(v.crumb||[]):(v.crumb||[]);
 if(_cc&&!(v.meta||[]).some(p=>p[0]==='国'))v.meta=[['国',{t:_cc.name,u:'countries/'+_cc.cc+'.html',r:_cc.reading}]].concat(v.meta||[]);
-if(!v.data&&_dd)v.data=_dd;
+if(v.anc&&v.meta){var _ar=_crumb.filter(c=>c.id).map(c=>[DB[c.id].kind==='市区町村'?'市':DB[c.id].kind,{i:c.id}]);v.meta.splice((v.meta[0]&&v.meta[0][0]==='国')?1:0,0,..._ar)}
+if(v.data==null&&_dd)v.data=_dd;
+if(typeof v.data==='number')v.data=DB['__datas'][v.data];
 if(!v.nodes_title)v.nodes_title=(v.kind==='市区町村'||v.kind==='行政区')?'この自治体の拠点':'この地域の拠点';
 if(!v.links)v.links=[];
-h+='<p class="meta">'+v.crumb.map(c=>c.cc?'<a href="countries/'+c.cc+'.html">'+rubyName(c.name,c.reading)+'</a>':'<a href="region.html?id='+c.id+'">'+rubyName(DB[c.id].name,DB[c.id].reading)+'</a>').join(' &gt; ')+(v.crumb.length?' &gt; ':'')+esc(v.name)+'</p>';
+h+='<p class="meta">'+_crumb.map(c=>c.cc?'<a href="countries/'+c.cc+'.html">'+rubyName(c.name,c.reading)+'</a>':'<a href="region.html?id='+c.id+'">'+rubyName(DB[c.id].name,DB[c.id].reading)+'</a>').join(' &gt; ')+(_crumb.length?' &gt; ':'')+esc(v.name)+'</p>';
 h+='<h1>'+rubyName(v.name,v.reading)+'</h1>';
 const meta=[['名称',v.name]];
 if(v.reading)meta.push(['読み',v.reading]);
@@ -48,7 +50,7 @@ if(v.node_groups&&v.node_groups.length){
     if(g.plain.length)h+='<ul class="items">'+g.plain.map(n=>'<li><a href="node.html?id='+n.id+'">'+rubyName(n.name,(DB['__nr']||{})[n.id])+'</a></li>').join('')+'</ul>';
   });
 }
-if(v.links&&v.links.length)h+='<h2>リンク</h2><ul class="items">'+v.links.map(x=>'<li><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.label)+'</a></li>').join('')+'</ul>';
+if(v.links&&v.links.length)h+=linksHtml(v.links, v.name);
 h+=dataLine(v.data);
 
 document.getElementById('app').innerHTML=h;

@@ -2,7 +2,7 @@
 <title>系統・列車 | Node Atlas（ノード・アトラス）</title><link rel="stylesheet" href="assets/site.css"></head>
 <body><div class="pagecard"><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./search.html">検索</a><a href="./map.html">地図</a><a href="./about.html">このサイトについて</a></nav>
 <div id="app"><p>読み込んでいます…</p></div>
-<script src="assets/common.js?v=daba14fb"></script>
+<script src="assets/common.js?v=e8a05019"></script>
 <script>
 if(!eid||!ecc){fail('IDが指定されていません。')}
 else fetch('data/services-'+ecc+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(DB=>{
@@ -11,12 +11,13 @@ if(!v){fail('見つかりませんでした。');return}
 document.title=v.name+' | Node Atlas（ノード・アトラス）';
 let h='';
 
+if(typeof v.data==='number')v.data=DB['__datas'][v.data];
 h+='<h1>'+rubyName(v.name,pairReading(v.info))+'</h1>';
 h+='<h2>'+lb('基本情報')+'</h2>'+metaTable(v.info);
 if(v.via&&v.via.length)h+='<h2>'+lb('経由路線')+'</h2><ul class="items">'+v.via.map(x=>'<li><a href="line.html?id='+x.id+'">'+rubyName(x.name,x.reading)+'</a>'+(x.sub?'（'+esc(x.sub)+'）':'')+'</li>').join('')+'</ul>';
 if(v.stops&&v.stops.length)h+='<h2>'+lb('停車駅')+'</h2><table><tr><th>'+lb('停車順')+'</th><th>'+lb('名称')+'</th><th>'+lb('読み')+'</th><th>コード</th><th>'+lb('区間 km')+'</th><th>'+lb('累計 km')+'</th><th>'+lb('自治体')+'</th></tr>'+v.stops.map(x=>'<tr><td>'+esc(x.seq)+'</td><td><a href="node.html?id='+x.id+'">'+esc(x.name)+(x.partial?' ※':'')+'</a></td><td>'+esc(x.reading||'')+'</td><td>'+esc(x.code)+'</td><td>'+(x.dist==null?'—':f1(x.dist))+'</td><td>'+f1(x.cum)+'</td><td>'+(x.muni_id?'<a href="region.html?id='+x.muni_id+'">'+esc(x.muni)+'</a>':esc(x.muni))+'</td></tr>').join('')+'</table>'+(v.stops.some(x=>x.partial)?'<p class="meta">※ 一部列車のみ停車</p>':'');
 if(v.notes)h+='<h2>'+lb('備考')+'</h2><p>'+esc(v.notes)+'</p>';
-if(v.links&&v.links.length)h+='<h2>リンク</h2><ul class="items">'+v.links.map(x=>'<li><a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.label)+'</a></li>').join('')+'</ul>';
+if(v.links&&v.links.length)h+=linksHtml(v.links, v.name);
 h+=dataLine(v.data);
 
 document.getElementById('app').innerHTML=h;
