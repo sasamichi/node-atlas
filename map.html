@@ -1,7 +1,7 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>地図から探す | Node Atlas（ノード・アトラス）</title><link rel="stylesheet" href="assets/site.css"></head>
 <body><div class="pagecard"><nav><a href="./index.html">トップ</a><a href="./countries.html">国・地域</a><a href="./transport.html">交通データ</a><a href="./search.html">検索</a><a href="./map.html">地図</a><a href="./about.html">このサイトについて</a></nav>
-<style>body{max-width:1200px}#map{height:72vh;min-height:420px;border:1px solid #b7a76f}.sqicon{background:transparent;border:none}.seat-sq{border:1px solid #fff;box-sizing:border-box}.mapctl{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin:.6rem 0;background:#fbf6e6;border:1px solid #d6c9a3;padding:.5rem .8rem}.mapctl label{font-size:.95rem}.mapctl input{width:auto}.kindbadge{display:inline-block;background:#e7dcba;border:1px solid #b7a76f;border-radius:9px;padding:0 .55em;font-size:.82em;color:#3c3520;margin-top:.15em}.leaflet-popup-content-wrapper{background:#fdfaf0;color:#35301f;border:1px solid #b7a76f;border-radius:4px}.leaflet-popup-tip{background:#fdfaf0}.leaflet-popup-content a{color:#2e5d46}.mcluster{background:transparent;border:none}.mcl-in{border-radius:50%;background:rgba(231,220,186,.92);border:2px solid #b7a76f;color:#3c3520;font-weight:bold;text-align:center;box-sizing:border-box}.mapsearch{margin:.6rem 0 0}.mapsearch input{width:100%;max-width:520px}.mapresults{margin:.3rem 0}.mhit{display:block;width:100%;max-width:520px;text-align:left;background:#fdfaf0;border:1px solid #d6c9a3;border-top:none;padding:.35rem .6rem;cursor:pointer;color:#35301f;font-size:.95rem}.mhit:first-of-type{border-top:1px solid #d6c9a3}.mhit:hover{background:#f7ead0}</style>
+<style>body{max-width:1200px}#map{height:72vh;min-height:420px;border:1px solid #b7a76f}.sqicon{background:transparent;border:none}.seat-sq{border:1px solid #fff;box-sizing:border-box}.mapctl{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin:.6rem 0;background:#fbf6e6;border:1px solid #d6c9a3;padding:.5rem .8rem}.mapctl label{font-size:.95rem}.mapctl input{width:auto}.kindbadge{display:inline-block;background:#e7dcba;border:1px solid #b7a76f;border-radius:9px;padding:0 .55em;font-size:.82em;color:#3c3520;margin-top:.15em}.leaflet-popup-content-wrapper{background:#fdfaf0;color:#35301f;border:1px solid #b7a76f;border-radius:4px}.leaflet-popup-tip{background:#fdfaf0}.leaflet-popup-content a{color:#2e5d46}.mcluster{background:transparent;border:none}.doticon{background:transparent;border:none}.mcl-in{border-radius:50%;background:rgba(231,220,186,.92);border:2px solid #b7a76f;color:#3c3520;font-weight:bold;text-align:center;box-sizing:border-box}.mapsearch{margin:.6rem 0 0}.mapsearch input{width:100%;max-width:520px}.mapresults{margin:.3rem 0}.mhit{display:block;width:100%;max-width:520px;text-align:left;background:#fdfaf0;border:1px solid #d6c9a3;border-top:none;padding:.35rem .6rem;cursor:pointer;color:#35301f;font-size:.95rem}.mhit:first-of-type{border-top:1px solid #d6c9a3}.mhit:hover{background:#f7ead0}</style>
 <h1>地図から探す</h1>
 <p class="meta">座標のある拠点と、自治体・地域（政庁所在地）を表示しています。マーカーを押すと詳細ページへのリンクが出ます。路線の線は表示しません（点データのみの方針）。</p>
 <div class="mapsearch"><input type="search" id="mapq" placeholder="地図内検索：名称・読みの一部を入力"><div id="mapresults" class="mapresults"></div></div>
@@ -16,7 +16,7 @@
 <label><input type="checkbox" id="ck-seat" checked> 自治体・地域 <span id="cnt-seat"></span></label>
 <label><input type="checkbox" id="ck-wst" checked> 気象観測地点 <span id="cnt-wst"></span></label>
 </div>
-<p class="meta" style="margin:.3rem 0">形：自治体・地域は四角（大きい濃色が都道府県、小さい淡色が市区町村・行政区）、交通網は円（空港・港湾は大きめの円）、気象観測地点は三角です。広域表示では四角・三角は件数入りの丸にまとまります（押すと拡大します）。</p>
+<p class="meta" style="margin:.3rem 0">形：自治体・地域は四角（大きい濃色が都道府県、小さい淡色が市区町村・行政区）、交通網は円（空港・港湾は大きめの円）、気象観測地点は三角です。広域表示ではマーカーは件数入りの丸にまとまります（押すと拡大します）。</p>
 <div id="map"></div>
 <p class="meta">背景地図：地理院タイル（国土地理院）／ © OpenStreetMap contributors。地図ライブラリ：Leaflet。</p>
 <link rel="stylesheet" href="assets/leaflet.css">
@@ -37,10 +37,9 @@ function pairReading(pairs){if(!pairs)return '';for(var i=0;i<pairs.length;i++){
 var map = L.map('map', {preferCanvas: true});
 var base = L.tileLayer(BASES.pale[0], BASES.pale[1]).addTo(map);
 var GROUPS = ['rail', 'road', 'bus', 'air', 'sea', 'seat', 'wst'];
-var CLUSTER_G = {seat: true, wst: true};
 function clusterIcon(cluster){ var n = cluster.getChildCount(); var s = n < 10 ? 30 : (n < 100 ? 38 : 46); return L.divIcon({html: '<div class="mcl-in" style="width:' + s + 'px;height:' + s + 'px;line-height:' + (s - 4) + 'px">' + n + '</div>', className: 'mcluster', iconSize: L.point(s, s)}); }
 var layers = {}, counts = {};
-GROUPS.forEach(function(g){ layers[g] = CLUSTER_G[g] ? L.markerClusterGroup({iconCreateFunction: clusterIcon, showCoverageOnHover: false, chunkedLoading: true}).addTo(map) : L.layerGroup().addTo(map); counts[g] = 0; });
+GROUPS.forEach(function(g){ layers[g] = L.markerClusterGroup({iconCreateFunction: clusterIcon, showCoverageOnHover: false, chunkedLoading: true}).addTo(map); counts[g] = 0; });
 var PTS = [];
 fetch('data/map-points.json').then(function(r){return r.json()}).then(function(pts){
   pts = pts.map(function(a){ return {t: a[0], id: a[1], name: a[2], reading: a[3], kind: a[4], g: a[5], sub: a[6], lat: a[7], lng: a[8]}; });
@@ -56,7 +55,8 @@ fetch('data/map-points.json').then(function(r){return r.json()}).then(function(p
       m = L.marker([p.lat, p.lng], {icon: L.divIcon({className: 'sqicon', iconSize: [14, 14], iconAnchor: [7, 7], html: '<svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1 L13 13 L1 13 Z" fill="#319795" stroke="#ffffff" stroke-width="1"/></svg>'})});
     } else {
       var big = (p.g === 'air' || p.g === 'sea');
-      m = L.circleMarker([p.lat, p.lng], {radius: big ? 8 : 5, weight: 1, color: '#ffffff', fillColor: KIND_COLOR[p.kind] || '#4a5568', fillOpacity: 0.9});
+      var dsz = big ? 16 : 10;
+      m = L.marker([p.lat, p.lng], {icon: L.divIcon({className: 'doticon', iconSize: [dsz, dsz], iconAnchor: [dsz / 2, dsz / 2], html: '<div style="width:' + dsz + 'px;height:' + dsz + 'px;border-radius:50%;box-sizing:border-box;background:' + (KIND_COLOR[p.kind] || '#4a5568') + ';border:1px solid #ffffff"></div>'})});
     }
     var title = p.t === 'w' ? esc(p.name) : '<a href="' + (isSeat ? 'region.html?id=' : 'node.html?id=') + p.id + '">' + esc(p.name) + '</a>';
     m.bindPopup('<b>' + title + '</b>' + (p.reading ? '<br>' + esc(p.reading) : '') + '<br><span class="kindbadge">' + esc(p.kind) + '</span>');
@@ -88,8 +88,7 @@ var mapq = document.getElementById('mapq'), mapres = document.getElementById('ma
 function gotoPoint(p){
   var ck = document.getElementById('ck-' + p.g);
   if (ck && !ck.checked) { ck.checked = true; ck.dispatchEvent(new Event('change')); }
-  if (CLUSTER_G[p.g]) { layers[p.g].zoomToShowLayer(p.marker, function(){ p.marker.openPopup(); }); }
-  else { map.setView([p.lat, p.lng], Math.max(map.getZoom(), 12)); p.marker.openPopup(); }
+  layers[p.g].zoomToShowLayer(p.marker, function(){ p.marker.openPopup(); });
 }
 function doSearch(){
   var v = mapq.value.trim();
